@@ -1,6 +1,10 @@
 const { ListingFilterService } = require("../../services");
 const { CheckBadRequest } = require("../../validations");
 const { MessageResponse } = require("../../helpers");
+const {
+  get_transaction_events,
+  get_listing,
+} = require("../contract/contract.controller");
 
 exports.createListingFilter = async (req, res, next) => {
   //check for errors
@@ -8,6 +12,10 @@ exports.createListingFilter = async (req, res, next) => {
   if (errors) return next(errors);
   const data = req.body;
   try {
+    const events = await get_transaction_events(data.tx_hash);
+    const id = events[0][Object.keys(events[0])[0]].id;
+    const listing = await get_listing(id);
+
     const newListingFilter = await ListingFilterService.createListingFilter(
       data
     );

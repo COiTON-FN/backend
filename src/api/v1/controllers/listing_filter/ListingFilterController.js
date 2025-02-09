@@ -1,6 +1,6 @@
 const { ListingFilterService } = require("../../services");
 const { CheckBadRequest } = require("../../validations");
-const { MessageResponse } = require("../../helpers");
+const { MessageResponse, Converter } = require("../../helpers");
 const {
   get_transaction_events,
   get_listing,
@@ -15,7 +15,7 @@ exports.createListingFilter = async (req, res, next) => {
     const events = await get_transaction_events(data.tx_hash);
     const id = events[0][Object.keys(events[0])[0]].id;
     const listing = await get_listing(id);
-
+    const details = Converter.byteArrayToString(listing.details);
     const newListingFilter = await ListingFilterService.createListingFilter(
       data
     );

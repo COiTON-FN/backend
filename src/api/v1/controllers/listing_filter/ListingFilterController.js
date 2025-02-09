@@ -68,8 +68,7 @@ exports.getListingsByKeywords = async (req, res, next) => {
   //check for errors
   const errors = CheckBadRequest(req, res, next);
   if (errors) return next(errors);
-  const { query } = req.query;
-  const { page, size } = req.pagination;
+  const { page, size, query } = req.query;
 
   try {
     const listing = await ListingFilterService.getListingsByKeywords(

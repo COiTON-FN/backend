@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, DataTypes) {
-      await queryInterface.createTable('listing_filters', { 
-         id: {
+  async up(queryInterface, DataTypes) {
+    await queryInterface.createTable("listing_filters", {
+      id: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true,
@@ -12,13 +12,12 @@ module.exports = {
       keywords: {
         type: DataTypes.TEXT,
         allowNull: false,
-       
       },
-      price:{
-        type:DataTypes.STRING,
-        allowNull:false
+      price: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-       createdAt: {
+      createdAt: {
         allowNull: false,
         type: DataTypes.DATE,
       },
@@ -26,7 +25,7 @@ module.exports = {
         allowNull: false,
         type: DataTypes.DATE,
       },
-       });
+    });
 
     /**
      * Add altering commands here.
@@ -36,8 +35,8 @@ module.exports = {
      */
   },
 
-  async down (queryInterface, Sequelize) {
-      await queryInterface.dropTable('listing_filters');
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable("listing_filters");
 
     /**
      * Add reverting commands here.
@@ -45,5 +44,5 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-  }
+  },
 };

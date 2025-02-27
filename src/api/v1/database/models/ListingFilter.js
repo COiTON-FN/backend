@@ -19,15 +19,8 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
       keywords: {
-        type: DataTypes.JSONB, // Use JSONB for efficient querying
+        type: DataTypes.TEXT, // Use JSONB for efficient querying
         allowNull: false,
-        defaultValue: [],
-        set(value) {
-          this.setDataValue(
-            "keywords",
-            Array.isArray(value) ? value.map((v) => v.toLowerCase()) : []
-          );
-        },
       },
       price: {
         type: DataTypes.STRING,

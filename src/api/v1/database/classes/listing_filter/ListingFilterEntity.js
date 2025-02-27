@@ -52,7 +52,9 @@ class ListingFilterEntity {
       const result = await ListingFilter.findAll({
         where: {
           keywords: {
-            [Op.overlap]: queries.map((mp) => mp.toLowerCase()),
+            [Op.or]: queries.map((keyword) => ({
+              [Op.iLike]: `%${keyword}%`,
+            })),
           },
         },
       });

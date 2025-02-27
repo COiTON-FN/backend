@@ -30,7 +30,9 @@ const get_listing = async (id) => {
   try {
     const { contract } = get_contract_instance();
     const data = await contract.get_listing(id);
-    if (Number(data[0].id) === 0) {
+    // console.log(id, "=======>>>>>> id");
+    // console.log(data, "========>>>> data");
+    if (Number(data.id) === 0) {
       throw new Error("Invalid listing");
     }
     return data;

@@ -6,16 +6,55 @@ const {
   get_listing,
 } = require("../contract/contract.controller");
 
+function extractKeywords(data) {
+  const keywords = [
+    "title",
+    "price",
+    "interior",
+    "exterior",
+    "rooms",
+    "utilities",
+    "description",
+    "region",
+    "area",
+  ];
+
+  const extractedValues = [];
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (keywords.includes(key)) {
+      if (Array.isArray(value)) {
+        extractedValues.push(value.map((item) => item.text)); // Extract text from arrays
+      } else if (key === "region") {
+        extractedValues.push(value.city.cityName);
+        extractedValues.push(value.state.stateName);
+        extractedValues.push(value.country.countryName);
+      } else {
+        extractedValues.push(value);
+      }
+    }
+  });
+
+  return extractedValues.flat().join(", ");
+}
+
 exports.createListingFilter = async (req, res, next) => {
   //check for errors
   const errors = CheckBadRequest(req, res, next);
   if (errors) return next(errors);
-  const data = req.body;
   try {
-    const events = await get_transaction_events(data.tx_hash);
+    const events = await get_transaction_events(req.body.tx_hash);
+    console.log(events);
     const id = events[0][Object.keys(events[0])[0]].id;
     const listing = await get_listing(id);
     const details = Converter.byteArrayToString(listing.details);
+
+    const data = {
+      id: Number(listing.id),
+      price: Number(listing.price).toString(),
+      keywords: extractKeywords(details),
+    };
+
     const newListingFilter = await ListingFilterService.createListingFilter(
       data
     );

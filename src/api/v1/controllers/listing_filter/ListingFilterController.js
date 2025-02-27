@@ -44,7 +44,6 @@ exports.createListingFilter = async (req, res, next) => {
   if (errors) return next(errors);
   try {
     const events = await get_transaction_events(req.body.tx_hash);
-    console.log(events);
     const id = events[0][Object.keys(events[0])[0]].id;
     const listing = await get_listing(id);
     const details = Converter.byteArrayToString(listing.details);

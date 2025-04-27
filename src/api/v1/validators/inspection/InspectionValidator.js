@@ -13,7 +13,6 @@ exports.create_inspection = [
         throw new Error("Inspection Already exist");
       }
     }),
-  ,
 ];
 
 exports.getInspection = [

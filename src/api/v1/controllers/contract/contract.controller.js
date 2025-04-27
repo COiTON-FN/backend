@@ -1,4 +1,4 @@
-const { RpcProvider, Contract, Account, cairo } = require("starknet");
+const { RpcProvider, Contract, Account, cairo, CallData } = require("starknet");
 const ABI = require("../../database/config/ABI.json");
 
 const get_contract_instance = () => {
@@ -14,6 +14,46 @@ const get_contract_instance = () => {
   // Connect account with the contract
   contract.connect(account);
   return { contract, account };
+};
+
+const execute_contract_call = async (call) => {
+  try {
+    if (!call) {
+      return { success: false, data: {}, message: "Invalid call" };
+    }
+
+    if (
+      !call.entrypoint ||
+      !call.contractAddress ||
+      (!call.calldata && !Array.isArray(call.calldata)) ||
+      call.calldata.length < 6
+    ) {
+      return { success: false, data: {}, message: "Invalid call" };
+    }
+    if (call.entrypoint !== "execute_from_outside_v2") {
+      return { success: false, data: {}, message: "Invalid call" };
+    }
+
+    const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+
+    if (call.calldata[5] !== CallData.compile([CONTRACT_ADDRESS])[0]) {
+      return { success: false, data: {}, message: "Invalid call" };
+    }
+
+    const { account } = get_contract_instance();
+    const tx = await account.execute(call);
+    return { success: true, data: tx, message: "Transaction successful" };
+  } catch (error) {
+    console.log(error, "======>>>>>>>>>\n\n\n\n\n\n\n\n\n========>>>>>>> END");
+    const match = error.message.match(/'([^']+)'/);
+
+    // If a match is found, get the error message
+    if (match) {
+      const errorMessage = match[1];
+      return { success: false, data: {}, message: errorMessage };
+    }
+    return { success: false, data: {}, message: error.message };
+  }
 };
 
 const get_transaction_events = async (tx_hash) => {
@@ -44,4 +84,5 @@ const get_listing = async (id) => {
 module.exports = {
   get_transaction_events,
   get_listing,
+  execute_contract_call,
 };

@@ -19,6 +19,8 @@ const get_contract_instance = () => {
 const execute_contract_call = async (call) => {
   try {
     if (!call) {
+      console.log("INVALID_CALL=======================>>>>>>>>>>>>");
+
       return { success: false, data: {}, message: "Invalid call" };
     }
 
@@ -28,15 +30,20 @@ const execute_contract_call = async (call) => {
       (!call.calldata && !Array.isArray(call.calldata)) ||
       call.calldata.length < 6
     ) {
+      console.log("CALLDATA_LENGTH=======================>>>>>>>>>>>>");
+
       return { success: false, data: {}, message: "Invalid call" };
     }
     if (call.entrypoint !== "execute_from_outside_v2") {
+      console.log("OUTSIDE_V2=======================>>>>>>>>>>>>");
       return { success: false, data: {}, message: "Invalid call" };
     }
 
     const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
     if (call.calldata[5] !== CallData.compile([CONTRACT_ADDRESS])[0]) {
+      console.log("INVALID_ADDRESS=======================>>>>>>>>>>>>");
+
       return { success: false, data: {}, message: "Invalid call" };
     }
 

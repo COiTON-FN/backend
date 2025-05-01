@@ -5,7 +5,7 @@ const {
 
 router.post("/execute", async (req, res) => {
   try {
-    const { call } = req.body;
+    const call = req.body;
     const execution = await execute_contract_call(call);
     if (!execution.success) {
       return res.status(400).json(execution);

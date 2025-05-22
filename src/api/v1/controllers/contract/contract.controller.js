@@ -21,7 +21,7 @@ const execute_contract_call = async (call) => {
     if (!call) {
       console.log("INVALID_CALL=======================>>>>>>>>>>>>");
 
-      return { success: false, data: {}, message: "Invalid call" };
+      return { success: false, data: {}, message: "INVALID_CALL" };
     }
 
     if (
@@ -32,19 +32,25 @@ const execute_contract_call = async (call) => {
     ) {
       console.log("CALLDATA_LENGTH=======================>>>>>>>>>>>>");
 
-      return { success: false, data: {}, message: "Invalid call" };
+      return { success: false, data: {}, message: "INVALID_CALLDATA_LENGTH" };
     }
     if (call.entrypoint !== "execute_from_outside_v2") {
-      console.log("OUTSIDE_V2=======================>>>>>>>>>>>>");
-      return { success: false, data: {}, message: "Invalid call" };
+      console.log("INVALID_ENTRYPOINT=======================>>>>>>>>>>>>");
+      return { success: false, data: {}, message: "INVALID_ENTRYPOINT" };
     }
 
     const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
-    if (call.calldata[5] !== CallData.compile([CONTRACT_ADDRESS])[0]) {
+    if (
+      call.calldata[5] !== CallData.compile([CONTRACT_ADDRESS])[0] &&
+      call.calldata[5] !=
+        CallData.compile([
+          "0x0683244c4a12de16630a8bae12dc435c7212cdeef0d3da08b6dd161ca5cc2f07",
+        ])
+    ) {
       console.log("INVALID_ADDRESS=======================>>>>>>>>>>>>");
 
-      return { success: false, data: {}, message: "Invalid call" };
+      return { success: false, data: {}, message: "INVALID_ADDRESS" };
     }
 
     const { account } = get_contract_instance();

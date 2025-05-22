@@ -9,4 +9,4 @@ mc:
 	cd src/api/v1/database && npx sequelize-cli migration:create --name ${name}
 
 dev:
-	cd src/api/v1/database && npx sequelize-cli db:migrate && mv $(shell pwd)/src/api/v1/database/dev.sqlite $(shell pwd) && npm run dev
+	export NODE_ENV=development && cd src/api/v1/database && npx sequelize-cli db:migrate && mv $(shell pwd)/src/api/v1/database/dev.sqlite $(shell pwd) && npm run dev

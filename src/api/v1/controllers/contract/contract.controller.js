@@ -1,5 +1,13 @@
-const { RpcProvider, Contract, Account, cairo, CallData } = require("starknet");
+const {
+  RpcProvider,
+  Contract,
+  Account,
+  ec,
+  hash,
+  CallData,
+} = require("starknet");
 const ABI = require("../../database/config/ABI.json");
+const { stringToByteArray } = require("../../helpers/converter/Converter");
 
 const get_contract_instance = () => {
   const RPC_URL = process.env.RPC_URL;
@@ -14,6 +22,35 @@ const get_contract_instance = () => {
   // Connect account with the contract
   contract.connect(account);
   return { contract, account };
+};
+
+const execute_admin_call = async (data) => {
+  try {
+    const signature = data.signature;
+    const msgHash = hash.computeHashOnElements(
+      stringToByteArray(JSON.stringify(data.payload))
+    );
+    const PRIVATE_KEY = process.env.PRIVATE_KEY;
+    const publicKey = ec.starkCurve.getPublicKey(PRIVATE_KEY);
+    const isValid = ec.starkCurve.verify(signature, msgHash, publicKey);
+    if (!isValid) {
+      return { success: false, data: {}, message: "INVALID_SIGNATURE" };
+    }
+    const { account } = get_contract_instance();
+    const tx = await account.execute(data.payload);
+    const receipt = await account.waitForTransaction(tx.transaction_hash);
+    return { success: true, data: receipt, message: "Transaction successful" };
+  } catch (error) {
+    console.log(error, "======>>>>>>>>>\n\n\n\n\n\n\n\n\n========>>>>>>> END");
+    const match = error.message.match(/'([^']+)'/);
+
+    // If a match is found, get the error message
+    if (match) {
+      const errorMessage = match[1];
+      return { success: false, data: {}, message: errorMessage };
+    }
+    return { success: false, data: {}, message: error.message };
+  }
 };
 
 const execute_contract_call = async (call) => {
@@ -55,7 +92,8 @@ const execute_contract_call = async (call) => {
 
     const { account } = get_contract_instance();
     const tx = await account.execute(call);
-    return { success: true, data: tx, message: "Transaction successful" };
+    const receipt = await account.waitForTransaction(tx.transaction_hash);
+    return { success: true, data: receipt, message: "Transaction successful" };
   } catch (error) {
     console.log(error, "======>>>>>>>>>\n\n\n\n\n\n\n\n\n========>>>>>>> END");
     const match = error.message.match(/'([^']+)'/);
@@ -98,4 +136,5 @@ module.exports = {
   get_transaction_events,
   get_listing,
   execute_contract_call,
+  execute_admin_call,
 };

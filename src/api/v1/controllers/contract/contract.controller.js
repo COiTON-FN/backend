@@ -24,6 +24,45 @@ const get_contract_instance = () => {
   return { contract, account };
 };
 
+const extractDecodedErrorReasons = (errorMsg) => {
+  const hexMatches = errorMsg.match(/0x[0-9a-fA-F]{8,}/g);
+  if (!hexMatches) return [];
+
+  const decodeHex = (hex) => {
+    hex = hex.replace(/^0x/, "");
+    let decoded = "";
+    for (let i = 0; i < hex.length; i += 2) {
+      const charCode = parseInt(hex.slice(i, i + 2), 16);
+      decoded +=
+        charCode >= 32 && charCode <= 126 ? String.fromCharCode(charCode) : ""; // skip unreadable characters
+    }
+    return decoded;
+  };
+
+  const priorityOrder = [
+    "INVALID_LISTING",
+    "UNAUTHORIZED",
+    "ALREADY_EXIST",
+    "INVALID_PARAM",
+    "PRICE_TOO_LOW",
+    "INSUFFICIENT_ALLOWANCE",
+    "INSUFFICIENT_BALANCE",
+    "NOT_REGISTERED",
+    "INVALID_ADDRESS",
+    "NOT_FOR_SALE",
+  ];
+
+  const decoded = hexMatches
+    .map(decodeHex)
+    .filter((str) => str && /^[A-Z0-9_\/-]{5,}$/.test(str)); // keep error-like strings
+
+  return decoded.sort((a, b) => {
+    const aIndex = priorityOrder.indexOf(a);
+    const bIndex = priorityOrder.indexOf(b);
+    return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+  });
+};
+
 const execute_admin_call = async (data) => {
   try {
     const signature = data.signature;
@@ -58,7 +97,7 @@ const execute_contract_call = async (call) => {
     if (!call) {
       console.log("INVALID_CALL=======================>>>>>>>>>>>>");
 
-      return { success: false, data: {}, message: "INVALID_CALL" };
+      return { success: false, data: {}, message: "Invalid call" };
     }
 
     if (
@@ -69,34 +108,35 @@ const execute_contract_call = async (call) => {
     ) {
       console.log("CALLDATA_LENGTH=======================>>>>>>>>>>>>");
 
-      return { success: false, data: {}, message: "INVALID_CALLDATA_LENGTH" };
+      return { success: false, data: {}, message: "Invalid call" };
     }
     if (call.entrypoint !== "execute_from_outside_v2") {
-      console.log("INVALID_ENTRYPOINT=======================>>>>>>>>>>>>");
-      return { success: false, data: {}, message: "INVALID_ENTRYPOINT" };
+      console.log("OUTSIDE_V2=======================>>>>>>>>>>>>");
+      return { success: false, data: {}, message: "Invalid call" };
     }
 
     const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
-    if (
-      call.calldata[5] !== CallData.compile([CONTRACT_ADDRESS])[0] &&
-      call.calldata[5] !=
-        CallData.compile([
-          "0x0683244c4a12de16630a8bae12dc435c7212cdeef0d3da08b6dd161ca5cc2f07",
-        ])
-    ) {
+    if (call.calldata[5] !== CallData.compile([CONTRACT_ADDRESS])[0]) {
       console.log("INVALID_ADDRESS=======================>>>>>>>>>>>>");
 
-      return { success: false, data: {}, message: "INVALID_ADDRESS" };
+      return { success: false, data: {}, message: "Invalid call" };
     }
 
     const { account } = get_contract_instance();
     const tx = await account.execute(call);
-    const receipt = await account.waitForTransaction(tx.transaction_hash);
-    return { success: true, data: receipt, message: "Transaction successful" };
+    return { success: true, data: tx, message: "Transaction successful" };
   } catch (error) {
-    console.log(error, "======>>>>>>>>>\n\n\n\n\n\n\n\n\n========>>>>>>> END");
+    console.log(
+      error.message,
+      "======>>>>>>>>>\n\n\n\n\n\n\n\n\n========>>>>>>> END"
+    );
     const match = error.message.match(/'([^']+)'/);
+
+    const errMessage = extractDecodedErrorReasons(error.message);
+    if (errMessage?.length) {
+      return { success: false, data: {}, message: errMessage[0] };
+    }
 
     // If a match is found, get the error message
     if (match) {

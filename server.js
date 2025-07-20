@@ -28,6 +28,6 @@ const PORT = process.env.PORT || 8000;
 server.listen(PORT, async () => {
   console.log("server running");
 
-  await sequelize.authenticate({ force: true });
+  // await sequelize.authenticate({ force: true });
   console.log("database connected");
 });

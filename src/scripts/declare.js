@@ -35,15 +35,11 @@ async function main() {
     process.exit(1);
   }
 
-  //   const myCallData = new CallData(sierraCode.abi);
+  const myCallData = new CallData(sierraCode.abi);
 
-  //   const constructor = myCallData.compile("constructor", {
-  //     owner: process.env.DEPLOYER_ADDRESS ?? "",
-  //     staking_token:
-  //       "0x227e1a8c4ee85feccab767c584c0b46f5c4062e97a9219a91ec75c86ce0a840",
-  //     reward_token:
-  //       "0x702d2721fdcb98fae346bf1398e0702b27c8ccc97e75e632ff93653ece67253",
-  //   });
+  const constructor = myCallData.compile("constructor", {
+    owner: process.env.ACCOUNT_ADDRESS ?? "",
+  });
 
   const maxQtyGasAuthorized = 1800n * 1000n; // max quantity of gas authorized
   const maxPriceAuthorizeForOneGas = 50n * 10n ** 12n * 1000n; // max FRI authorized to pay 1 gas (1 FRI=10**-18 STRK)
@@ -70,8 +66,15 @@ async function main() {
       resourceBounds: val.resourceBounds,
     }
   );
-
+  await provider.waitForTransaction(declared.transaction_hash);
   console.log(declared);
+  const deployed = await account0.deployContract({
+    classHash: declared.class_hash,
+    constructorCalldata: constructor,
+    salt: stark.randomAddress(),
+  });
+
+  console.log(deployed);
 
   //   const deployResponse = await account0.declareAndDeploy({
   //     contract: sierraCode,

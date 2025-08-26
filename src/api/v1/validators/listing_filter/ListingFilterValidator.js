@@ -22,7 +22,7 @@ exports.get_listing_by_id = [
     .notEmpty()
     .withMessage("invalid query")
     .bail()
-    .custom(async (query) => {
+    .custom(async (id) => {
       const listing_exist = await ListingFilter.getListingFilter(id);
       if (!listing_exist) {
         throw new Error("invalid query");

@@ -1,5 +1,5 @@
 mgt:
-	cd src/api/v1/database && npx sequelize-cli db:migrate --env development
+	cd src/api/v1/database && npx sequelize-cli db:migrate --env test
 
 mgprod:
 	export NODE_TLS_REJECT_UNAUTHORIZED='0' && cd src/api/v1/database && npx sequelize-cli db:migrate --env production
@@ -9,4 +9,4 @@ mc:
 	cd src/api/v1/database && npx sequelize-cli migration:create --name ${name}
 
 dev:
-	cd src/api/v1/database && npx sequelize-cli db:migrate && mv /Users/victorsamuel/Documents/zarah/shit/coiton/backend/src/api/v1/database/dev.sqlite /Users/victorsamuel/Documents/zarah/shit/coiton/backend && npm run dev
+	export NODE_ENV=development && cd src/api/v1/database && npx sequelize-cli db:migrate && mv $(shell pwd)/src/api/v1/database/dev.sqlite $(shell pwd) && npm run dev
